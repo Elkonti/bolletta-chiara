@@ -1,6 +1,7 @@
 #!/bin/sh
 # Bare repo hook: check out the pushed main branch and republish the site.
 set -eu
+umask 002   # files written by any group member stay replaceable by the others
 while read old new ref; do
   [ "$ref" = "refs/heads/main" ] || [ "$ref" = "refs/heads/master" ] || continue
   git --work-tree=/srv/bolletta/app --git-dir=/srv/bolletta/repo.git checkout -f "$ref" -- .
