@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bolletta Chiara</title>
+<meta name="description" content="Quanto pagheresti davvero in un anno con ogni offerta luce a prezzo fisso: prezzo, rete, oneri, accise e IVA. Nessuna registrazione, nessun numero di telefono.">
+<style>
+/* Layout: one narrow column. Form, then a summary line, then the ranked offers as rows with an expandable cost breakdown. System fonts only: the page loads nothing from third parties. */
+:root {
+  --bg: #f6f7f4; --surface: #ffffff; --ink: #1d2420; --muted: #5d6862; --line: #dfe3dd;
+  --accent: #0f6b4f; --accent-ink: #ffffff; --accent-soft: #e3f1ea; --warn: #8a5a00; --warn-soft: #fbf1dc;
+  --bar-energy: #0f6b4f; --bar-fee: #5f9e86; --bar-net: #9aa7a0; --bar-tax: #c9a24a;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121614; --surface: #1a201d; --ink: #e6ebe7; --muted: #9aa69f; --line: #2c3530;
+    --accent: #5cc79c; --accent-ink: #0d1a14; --accent-soft: #1d3329; --warn: #e2b55a; --warn-soft: #33290f;
+    --bar-energy: #5cc79c; --bar-fee: #3f8f70; --bar-net: #66736c; --bar-tax: #b38d3a;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--sans); }
+main { max-width: 46rem; margin: 0 auto; padding-block: 2rem 4rem; padding-inline: 16px; display: grid; gap: 1.5rem; }
+h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 1.1rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lead { color: var(--muted); max-width: 38rem; }
+.promise { display: flex; flex-wrap: wrap; gap: .4rem; }
+.promise span { font-size: .8rem; background: var(--accent-soft); color: var(--ink); border-radius: 999px; padding: .15rem .65rem; }
+form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem; display: grid; gap: 1rem; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; }
+label { display: grid; gap: .3rem; font-weight: 600; font-size: .9rem; }
+label small { font-weight: 400; color: var(--muted); }
+input, select { font: inherit; padding: .55rem .6rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; }
+input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details.adv summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
+details.adv .fields { margin-top: .8rem; }
+button { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: .65rem 1.1rem; cursor: pointer; justify-self: start; }
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem; display: grid; gap: .8rem; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .8rem; }
+.figs div { display: grid; gap: .1rem; }
+.figs b { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+.figs span { font-size: .8rem; color: var(--muted); }
+.save { background: var(--accent-soft); border-radius: 8px; padding: .7rem .8rem; }
+.note { background: var(--warn-soft); color: var(--ink); border-radius: 8px; padding: .7rem .8rem; font-size: .9rem; }
+.note b { color: var(--warn); }
+ol.offers { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; counter-reset: rank; }
+ol.offers > li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; counter-increment: rank; }
+ol.offers details > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 2rem 1fr auto; gap: .2rem .8rem; align-items: baseline; padding: .75rem .9rem; }
+ol.offers details > summary::-webkit-details-marker { display: none; }
+ol.offers details > summary::before { content: counter(rank); color: var(--muted); font-variant-numeric: tabular-nums; font-size: .9rem; }
+.name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.price { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.meta { grid-column: 2 / 4; color: var(--muted); font-size: .82rem; }
+.detail { padding: 0 .9rem .9rem 3.7rem; display: grid; gap: .6rem; }
+.bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); }
+.bar i { display: block; height: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+td { padding: .2rem 0; border-bottom: 1px solid var(--line); }
+td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; font-weight: 700; }
+.sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .4rem; vertical-align: -1px; }
+.detail a { color: var(--accent); }
+.cond { font-size: .82rem; color: var(--muted); }
+.more { justify-self: center; background: transparent; color: var(--accent); border: 1px solid var(--line); }
+#out:not([hidden]) { display: grid; gap: 1rem; }
+footer { color: var(--muted); font-size: .82rem; display: grid; gap: .5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+footer a { color: inherit; }
+@media (max-width: 480px) { .detail { padding-left: .9rem; } }
+</style>
+</head>
+<body>
+<main>
+  <header style="display:grid;gap:.7rem">
+    <h1>Quanto pagheresti davvero per la luce?</h1>
+    <p class="lead">Il costo di un anno con ogni offerta a prezzo fisso del mercato libero, comprese le voci che non si vedono nel prezzo pubblicizzato: rete, oneri di sistema, dispacciamento, accise e IVA.</p>
+    <div class="promise"><span>Nessuna registrazione</span><span>Nessun numero di telefono</span><span>Nessun dato inviato</span></div>
+  </header>
+
+  <form id="f">
+    <div class="fields">
+      <label for="kwh">Consumo annuo (kWh)<small>Sulla bolletta: "consumo annuo"</small>
+        <input id="kwh" type="number" min="100" max="20000" step="10" value="2700" required></label>
+      <label for="kw">Potenza impegnata (kW)<small>Di solito 3 kW</small>
+        <input id="kw" type="number" min="1" max="10" step="0.5" value="3" required></label>
+      <label for="region">Regione<small>Alcune offerte sono solo locali</small>
+        <select id="region"></select></label>
+    </div>
+    <details class="adv">
+      <summary>Altri dati dalla bolletta (facoltativi)</summary>
+      <div class="fields">
+        <label for="now">Quanto spendi oggi in un anno (€)<small>Per calcolare il risparmio</small>
+          <input id="now" type="number" min="0" step="1" placeholder="es. 1100"></label>
+        <label for="f1">Consumo in F1 (%)<small>Giorni feriali 8–19. Senza: 33%</small>
+          <input id="f1" type="number" min="0" max="100" step="1" placeholder="33"></label>
+        <label for="f2">Consumo in F2 (%)<small>Sere e sabato. Senza: 31%</small>
+          <input id="f2" type="number" min="0" max="100" step="1" placeholder="31"></label>
+      </div>
+    </details>
+    <button type="submit">Confronta le offerte</button>
+  </form>
+
+  <section id="out" hidden></section>
+
+  <footer>
+    <p><b>Da dove vengono i numeri.</b> Offerte e componenti regolate: open data del <a href="https://www.ilportaleofferte.it/portaleOfferte/it/open-data.page" rel="noopener">Portale Offerte di ARERA</a>, aggiornati ogni notte<span id="asof"></span>. Questo sito non è collegato ad ARERA né ad alcun fornitore e non riceve commissioni.</p>
+    <p><b>Cosa è stimato.</b> Cliente domestico residente, primi 12 mesi. Sconti con condizioni (es. domiciliazione) esclusi. Le offerte a prezzo variabile non sono ancora incluse. Prima di firmare, controlla sempre le condizioni sul sito del fornitore o sul Portale Offerte.</p>
+    <p><b>Privacy.</b> Il calcolo avviene nel tuo browser: i dati che inserisci non lasciano il tuo dispositivo. Nessun cookie, nessuna statistica.</p>
+  </footer>
+</main>
+
+<script type="module">
+import { rank, DEFAULT_SPLIT } from "./calc.js";
+
+const REGIONS = [["01","Piemonte"],["02","Valle d'Aosta"],["03","Lombardia"],["04","Trentino-Alto Adige"],["05","Veneto"],
+  ["06","Friuli-Venezia Giulia"],["07","Liguria"],["08","Emilia-Romagna"],["09","Toscana"],["10","Umbria"],["11","Marche"],
+  ["12","Lazio"],["13","Abruzzo"],["14","Molise"],["15","Campania"],["16","Puglia"],["17","Basilicata"],["18","Calabria"],
+  ["19","Sicilia"],["20","Sardegna"]];
+const $ = (id) => document.getElementById(id);
+const eur = (v) => v.toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+const per = (v) => v.toLocaleString("it-IT", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + " €/kWh";
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const link = (u) => !u ? "" : (/^https?:\/\//i.test(u) ? u : "https://" + u);
+
+$("region").innerHTML = REGIONS.map(([c, n]) => `<option value="${c}">${n}</option>`).join("");
+try { $("region").value = localStorage.getItem("region") || "03"; } catch { $("region").value = "03"; }
+
+let data;
+const ready = fetch("data/offers.json").then((r) => r.json()).then((d) => {
+  data = d;
+  $("asof").textContent = ` (dati del ${new Date(d.date).toLocaleDateString("it-IT")})`;
+});
+
+const PARTS = [
+  ["energy", "Energia (prezzo dell'offerta)", "--bar-energy"],
+  ["fixed", "Quota fissa del fornitore", "--bar-fee"],
+  ["network", "Trasporto e gestione contatore", "--bar-net"],
+  ["system", "Oneri di sistema", "--bar-net"],
+  ["dispatch", "Dispacciamento", "--bar-net"],
+  ["excise", "Accise", "--bar-tax"],
+  ["vat", "IVA", "--bar-tax"],
+];
+
+function row(r, kwh) {
+  const o = r.offer;
+  const months = o.durationMonths > 0 && o.durationMonths < 99 ? `prezzo bloccato ${o.durationMonths} mesi` : "durata prezzo non indicata";
+  const total = PARTS.reduce((a, [k]) => a + r[k], 0);
+  const bar = PARTS.map(([k, , c]) => `<i style="width:${(r[k] / total) * 100}%;background:var(${c})"></i>`).join("");
+  const lines = PARTS.map(([k, label, c]) => `<tr><td><span class="sw" style="background:var(${c})"></span>${label}</td><td>${eur(r[k])}</td></tr>`).join("")
+    + (r.discount > 0.5 ? `<tr><td>Sconti senza condizioni</td><td>−${eur(r.discount)}</td></tr>` : "")
+    + `<tr><td>Totale in un anno</td><td>${eur(r.total)}</td></tr>`;
+  const conds = o.conditions.filter(Boolean).slice(0, 2).map((c) => `<p class="cond">Condizione: ${esc(c.slice(0, 220))}${c.length > 220 ? "…" : ""}</p>`).join("");
+  return `<li><details><summary><span class="name">${esc(o.name)}</span><span class="price">${eur(r.total)}</span>
+    <span class="meta">${esc((o.site || "").replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""))} · ${per(r.total / kwh)} tutto incluso · ${months}</span></summary>
+    <div class="detail"><div class="bar" aria-hidden="true">${bar}</div><table>${lines}</table>${conds}
+    <p><a href="${esc(link(o.url || o.site))}" rel="noopener nofollow" target="_blank">Scheda dell'offerta sul sito del fornitore</a></p></div></details></li>`;
+}
+
+function render() {
+  const kwh = +$("kwh").value, kw = +$("kw").value, region = $("region").value;
+  const f1 = $("f1").value === "" ? null : +$("f1").value / 100, f2 = $("f2").value === "" ? null : +$("f2").value / 100;
+  let split = DEFAULT_SPLIT, splitNote = "";
+  if (f1 != null && f2 != null && f1 + f2 <= 1) split = { F1: f1, F2: f2, F3: 1 - f1 - f2 };
+  else if (f1 != null || f2 != null) splitNote = `<p class="note"><b>Fasce ignorate.</b> Inserisci sia F1 che F2, con somma non oltre 100%. Uso la ripartizione tipica.</p>`;
+  try { localStorage.setItem("region", region); } catch {}
+
+  const rows = rank(data, { kwh, kw, region, split });
+  const out = $("out");
+  if (!rows.length) { out.innerHTML = `<p class="note">Nessuna offerta a prezzo fisso trovata per questi valori.</p>`; out.hidden = false; return; }
+  const median = rows[Math.floor((rows.length - 1) / 2)].total, best = rows[0].total;
+  const now = +$("now").value;
+  const save = now > 0
+    ? (now > best ? `<p class="save">Con l'offerta più conveniente risparmieresti circa <b>${eur(now - best)}</b> all'anno rispetto a oggi.</p>`
+                  : `<p class="save">Spendi già meno dell'offerta più conveniente qui: non c'è niente da cambiare.</p>`)
+    : `<p class="save">Tra l'offerta più conveniente e quella tipica ci sono <b>${eur(median - best)}</b> all'anno.</p>`;
+  let shown = 20;
+  const list = () => rows.slice(0, shown).map((r) => row(r, kwh)).join("");
+  out.innerHTML = `${splitNote}<div class="summary">
+      <h2>${rows.length} offerte a prezzo fisso per ${kwh.toLocaleString("it-IT")} kWh in ${esc(REGIONS.find(([c]) => c === region)[1])}</h2>
+      <div class="figs"><div><b>${eur(best)}</b><span>la più conveniente</span></div>
+        <div><b>${eur(median)}</b><span>a metà classifica</span></div>
+        <div><b>${eur(rows[rows.length - 1].total)}</b><span>la più cara</span></div></div>${save}</div>
+    <ol class="offers" id="list">${list()}</ol>
+    ${rows.length > shown ? `<button class="more" id="more" type="button">Mostra altre offerte</button>` : ""}`;
+  out.hidden = false;
+  const more = $("more");
+  if (more) more.onclick = () => { shown += 30; $("list").innerHTML = list(); if (shown >= rows.length) more.remove(); };
+}
+
+$("f").addEventListener("submit", async (e) => { e.preventDefault(); await ready; render(); });
+ready.then(render).catch(() => { $("out").innerHTML = `<p class="note"><b>Dati non disponibili.</b> Riprova tra qualche minuto.</p>`; $("out").hidden = false; });
+</script>
+</body>
+</html>

@@ -1,6 +1,9 @@
 """Yearly cost of every household fixed-price electricity offer on the
 Portale Offerte, following the SII spec "Trasmissione Offerte Mercato Retail"
-v5.0 (12/11/2025). Usage: python bill.py [kWh/year] [kW] [region] [province]"""
+v5.0 (12/11/2025). Usage: python bill.py [kWh/year] [kW] [region] [province]
+
+Independent reference for the website's calculator (site/calc.js):
+tests/compare.mjs checks that both give the same totals."""
 import sys, glob, os, statistics, xml.etree.ElementTree as ET
 
 DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
@@ -124,10 +127,10 @@ def cost(o):
 
 def available_here(o):
     zones = [z for z in o.iter() if tag(z) == "ZoneOfferta"]
-    if not zones:
-        return True                                 # no zones = all of Italy
     regions = {(x.text or "").strip() for z in zones for x in z.iter() if tag(x) == "REGIONE"}
     provinces = {(x.text or "").strip() for z in zones for x in z.iter() if tag(x) == "PROVINCIA"}
+    if not regions and not provinces:
+        return True                                 # no zones, or an empty section = all of Italy (spec)
     return REGION in regions or (PROVINCE is not None and PROVINCE in provinces)
 
 def second_home(o):
@@ -150,12 +153,17 @@ for o in ET.parse(OFFERS).getroot():
     if c is None or not (0.02 <= c["energy"] / KWH <= 1.0):   # malformed offers (e.g. €/MWh as €/kWh)
         skipped += 1
         continue
+    c["key"] = txt(o, "IdentificativiOfferta/PIVA_UTENTE") + "/" + txt(o, "IdentificativiOfferta/COD_OFFERTA")
     c["name"] = txt(o, "DettaglioOfferta/NOME_OFFERTA")
     c["site"] = txt(o, "DettaglioOfferta/Contatti/URL_SITO_VENDITORE")
     c["months"] = txt(o, "DettaglioOfferta/DURATA")
     rows.append(c)
 
 rows.sort(key=lambda r: r["total"])
+if os.environ.get("BILL_JSON"):                     # reference output for tests/compare.mjs
+    import json
+    json.dump({r["key"]: round(r["total"], 2) for r in rows}, sys.stdout)
+    sys.exit()
 print(f"{KWH:.0f} kWh/year, {KW} kW, resident: {len(rows)} fixed offers priced in region {REGION}, {regional} only sold elsewhere, {skipped} unreadable")
 pick = lambda q: rows[round(q * (len(rows) - 1))]
 for label, r in [("cheapest", rows[0]), ("10%", pick(.1)), ("25%", pick(.25)),
