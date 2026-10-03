@@ -27,7 +27,10 @@ const ready = Promise.all([
   data = d; affiliates = a;
   $("disclosure").textContent = Object.keys(a.suppliers).length ? a.disclosureWithLinks : "Non riceve commissioni.";
   $("asof").textContent = ` (dati del ${new Date(d.date).toLocaleDateString("it-IT")})`;
+  $("kind").hidden = !d.index; // variable offers only when the day's data could price them
 });
+
+const monthName = (ym) => new Date(+ym.slice(0, 4), +ym.slice(4) - 1).toLocaleDateString("it-IT", { month: "short", year: "numeric" });
 
 const PARTS = [
   ["energy", "Energia (prezzo dell'offerta)", "--bar-energy"],
@@ -49,7 +52,8 @@ function offerButton(o) {
 
 function row(r, kwh) {
   const o = r.offer;
-  const months = o.durationMonths > 0 && o.durationMonths < 99 ? `prezzo bloccato ${o.durationMonths} mesi` : "durata prezzo non indicata";
+  const months = o.variable ? "prezzo variabile, segue il PUN"
+    : o.durationMonths > 0 && o.durationMonths < 99 ? `prezzo bloccato ${o.durationMonths} mesi` : "durata prezzo non indicata";
   const total = PARTS.reduce((a, [k]) => a + r[k], 0);
   const bar = PARTS.map(([k, , c]) => `<i style="width:${(r[k] / total) * 100}%;background:var(${c})"></i>`).join("");
   const lines = PARTS.map(([k, label, c]) => `<tr><td><span class="sw" style="background:var(${c})"></span>${label}</td><td>${eur(r[k])}</td></tr>`).join("")
@@ -70,9 +74,14 @@ function render() {
   else if (f1 != null || f2 != null) splitNote = `<p class="note"><b>Fasce ignorate.</b> Inserisci sia F1 che F2, con somma non oltre 100%. Uso la ripartizione tipica.</p>`;
   try { localStorage.setItem("region", region); } catch {}
 
-  const rows = rank(data, { kwh, kw, region, split });
+  const variable = !!data.index && $("f").elements.kind.value === "variable";
+  const kindWord = variable ? "variabile" : "fisso";
+  const rows = rank(data, { kwh, kw, region, split, variable });
   const out = $("out");
-  if (!rows.length) { out.innerHTML = `<p class="note">Nessuna offerta a prezzo fisso trovata per questi valori.</p>`; out.hidden = false; return; }
+  if (!rows.length) { out.innerHTML = `<p class="note">Nessuna offerta a prezzo ${kindWord} trovata per questi valori.</p>`; out.hidden = false; return; }
+  const estimate = variable
+    ? `<p class="note"><b>Stima.</b> Il prezzo di queste offerte segue il PUN, che cambia ogni mese. Il calcolo usa la media del PUN di ${esc(monthName(data.index.from))}–${esc(monthName(data.index.to))} (${per(data.index.pun)}, più le perdite di rete) e lo spread di ogni offerta. Se il PUN sale o scende, il costo cambia. Il Portale Offerte usa invece prezzi futuri che non sono pubblici, quindi i suoi totali possono essere diversi.</p>`
+    : "";
   const median = rows[Math.floor((rows.length - 1) / 2)].total, best = rows[0].total;
   const now = +$("now").value;
   const save = now > 0
@@ -81,8 +90,8 @@ function render() {
     : `<p class="save">Tra l'offerta più conveniente e quella tipica ci sono <b>${eur(median - best)}</b> all'anno.</p>`;
   let shown = 20;
   const list = () => rows.slice(0, shown).map((r) => row(r, kwh)).join("");
-  out.innerHTML = `${splitNote}<div class="summary">
-      <h2>${rows.length} offerte a prezzo fisso per ${kwh.toLocaleString("it-IT")} kWh in ${esc(REGIONS.find(([c]) => c === region)[1])}</h2>
+  out.innerHTML = `${splitNote}${estimate}<div class="summary">
+      <h2>${rows.length} offerte a prezzo ${kindWord} per ${kwh.toLocaleString("it-IT")} kWh in ${esc(REGIONS.find(([c]) => c === region)[1])}</h2>
       <div class="figs"><div><b>${eur(best)}</b><span>la più conveniente</span></div>
         <div><b>${eur(median)}</b><span>a metà classifica</span></div>
         <div><b>${eur(rows[rows.length - 1].total)}</b><span>la più cara</span></div></div>${save}</div>
@@ -94,6 +103,7 @@ function render() {
 }
 
 $("f").addEventListener("submit", async (e) => { e.preventDefault(); await ready; render(); });
+$("kind").addEventListener("change", () => { if (data) render(); });
 ready.then(render).catch(() => { $("out").innerHTML = `<p class="note"><b>Dati non disponibili.</b> Riprova tra qualche minuto.</p>`; $("out").hidden = false; });
 
 // Installable app and offline use (browsers allow it only over HTTPS).
