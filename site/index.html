@@ -42,6 +42,9 @@ label { display: grid; gap: .3rem; font-weight: 600; font-size: .9rem; }
 label small { font-weight: 400; color: var(--muted); }
 input, select { font: inherit; padding: .55rem .6rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; }
 input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pdf { display: grid; gap: .4rem; padding: .8rem; border: 1px dashed var(--line); border-radius: 8px; }
+.pdf input { font: inherit; font-size: .9rem; }
+.pdfmsg { font-size: .9rem; margin: 0; }
 .kind { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; }
 .kind legend { font-weight: 600; font-size: .9rem; padding: 0; margin-bottom: .3rem; width: 100%; }
 .kind label { display: flex; align-items: center; gap: .4rem; font-weight: 400; font-size: .95rem; }
@@ -90,6 +93,11 @@ footer a { color: inherit; }
   </header>
 
   <form id="f">
+    <div class="pdf">
+      <label for="pdf">Hai la bolletta in PDF? Leggo i dati da lì<small>Il file resta sul tuo dispositivo: non viene inviato a nessuno.</small>
+        <input id="pdf" type="file" accept="application/pdf,.pdf"></label>
+      <p class="pdfmsg" id="pdfmsg" role="status" hidden></p>
+    </div>
     <div class="fields">
       <label for="kwh">Consumo annuo (kWh)<small>Sulla bolletta: "consumo annuo"</small>
         <input id="kwh" type="number" min="100" max="20000" step="10" value="2700" required></label>

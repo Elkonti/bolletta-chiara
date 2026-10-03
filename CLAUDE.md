@@ -28,9 +28,9 @@ questions there (ArtifactData), never block on chat.
   refuses to publish broken data; `render.mjs` builds region pages + sitemap.
 - `site/calc.js` is the calculator (browser and Node); `bill.py` is an
   independent Python reference. After any calculation change:
-  `node tests/rules.mjs && node tests/compare.mjs && node tests/page.mjs` must
-  pass (needs `python3 fetch.py` and `python3 prepare.py` first for the day's
-  data).
+  `node tests/rules.mjs && node tests/compare.mjs && node tests/page.mjs &&
+  node tests/billread.mjs` must pass (needs `python3 fetch.py` and
+  `python3 prepare.py` first for the day's data).
 - Field codes follow the SII spec "Trasmissione Offerte Mercato Retail" v5.0;
   the README lists the rules applied.
 

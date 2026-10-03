@@ -1,0 +1,10 @@
+BOLLETTA DI ESEMPIO (sintetica, per i test)
+Periodo di fornitura: 01/07/2026 - 31/08/2026
+Codice POD IT001E12345678
+Indirizzo di fornitura: Via Esempio 1, 25121 Brescia BS
+Tipologia cliente: Domestico residente
+Potenza impegnata 3 kW   Potenza disponibile 3,3 kW
+Consumo annuo: 2.345 kWh
+Consumi del periodo per fascia
+F1 210 kWh   F2 180 kWh   F3 230 kWh
+Totale da pagare 152,40 euro

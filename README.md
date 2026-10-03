@@ -46,6 +46,19 @@ Field codes follow the SII spec
 - Offers limited to other regions (ZoneOfferta) are left out.
 - Excise is zero for residential ≤3 kW using ≤150 kWh a month.
 
+## Reading the bill PDF
+
+The visitor can pick their bill PDF; `site/billread.js` reads it in the
+browser with pdf.js (self-hosted in `site/vendor/pdfjs`, version and checksum
+in `SOURCE.txt`) and fills consumption, power and band split. The file is
+never uploaded, and pdf.js loads only when a file is picked. Scanned bills
+(images) can't be read; the form says so and manual entry stays. Patterns
+are tested on text cases, the layouts of public sample bills (Enel 2025,
+Edison, Facile Energy 2025; the PDFs themselves aren't in the repo) and a
+synthetic PDF (`tests/billread.mjs`; fixtures made with `tests/makepdf.py`).
+The annual total is recognised by its band values adding up to it, because
+the text order of bill tables often doesn't follow the layout.
+
 ## Not done yet
 
 - Variable offers use one PUN figure for all bands (the open file has no

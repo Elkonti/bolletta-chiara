@@ -103,6 +103,32 @@ function render() {
 }
 
 $("f").addEventListener("submit", async (e) => { e.preventDefault(); await ready; render(); });
+
+// Bill PDF: read on the device (billread.js + self-hosted pdf.js), fill the
+// form, say what was found so the visitor can check it.
+$("pdf").addEventListener("change", async () => {
+  const file = $("pdf").files[0], msg = $("pdfmsg");
+  if (!file) return;
+  msg.hidden = false; msg.textContent = "Leggo la bolletta…";
+  let r = null;
+  try {
+    const { parseBill, pdfText } = await import("./billread.js");
+    r = parseBill(await pdfText(new Uint8Array(await file.arrayBuffer())));
+  } catch { r = null; }
+  const found = [];
+  if (r?.kwh) { $("kwh").value = Math.round(r.kwh); found.push(`consumo annuo ${Math.round(r.kwh).toLocaleString("it-IT")} kWh`); }
+  if (r?.kw) { $("kw").value = r.kw; found.push(`potenza ${r.kw.toLocaleString("it-IT")} kW`); }
+  if (r?.bands && r.bands.f2 != null) { // F1/F23 only: the form needs F1 and F2, keep the typical split
+    $("f1").value = Math.round(r.bands.f1 * 100);
+    $("f2").value = Math.round(r.bands.f2 * 100);
+    found.push(`fasce F1 ${$("f1").value}%, F2 ${$("f2").value}%`);
+    document.querySelector("details.adv").open = true;
+  }
+  msg.textContent = found.length
+    ? `Dalla bolletta: ${found.join(", ")}. Controlla che i valori siano giusti.${r.kwh ? "" : " Il consumo annuo non l'ho trovato: inseriscilo a mano."}`
+    : "Non sono riuscito a leggere i dati da questo file (forse è una scansione o un formato diverso). Inseriscili a mano: sono nella prima pagina della bolletta.";
+  if (found.length) { await ready; render(); }
+});
 $("kind").addEventListener("change", () => { if (data) render(); });
 ready.then(render).catch(() => { $("out").innerHTML = `<p class="note"><b>Dati non disponibili.</b> Riprova tra qualche minuto.</p>`; $("out").hidden = false; });
 
