@@ -1,13 +1,15 @@
 # bolletta-check
 
 What a household in Italy really pays per year for electricity, for every
-fixed-price offer on ARERA's Portale Offerte: the offer's own price plus
-network, system charges, dispatch, excise and VAT.
+fixed-price offer on ARERA's Portale Offerte, and an estimate for variable
+offers on the PUN: the offer's own price plus network, system charges,
+dispatch, excise and VAT.
 
 ```
 python fetch.py                  # today's offers and parameters into data/
 python bill.py 2700 3 03         # kWh/year, kW, ISTAT region (03 = Lombardia)
 python bill.py 2700 3 03 020     # + ISTAT province (020 = Mantova)
+BILL_KIND=variable python bill.py 2700 3 03   # variable offers on the PUN
 ```
 
 No dependencies beyond Python 3.
@@ -16,7 +18,8 @@ No dependencies beyond Python 3.
 
 Open data from the [Portale Offerte](https://www.ilportaleofferte.it/portaleOfferte/it/open-data.page),
 updated daily: free-market electricity offers (XML) and regulated parameters
-(CSV). The site states no license; check reuse terms with ARERA / Acquirente
+(CSV), plus the portal's "Prezzi storici – indici a pubblica diffusione"
+(monthly PUN, CSV) for variable offers. The site states no license; check reuse terms with ARERA / Acquirente
 Unico before publishing results. `data/` is not committed.
 
 Field codes follow the SII spec
@@ -27,13 +30,26 @@ Field codes follow the SII spec
 - Offer prices already include network losses.
 - Optional green-energy components (MACROAREA 06, TIPOLOGIA 02) are left out.
 - Conditional discounts (CONDIZIONE_APPLICAZIONE other than 00) are left out;
-  discounts valid only after 12 months are left out.
+  discounts valid only after 12 months are left out. A discount limited to
+  fewer than 12 months (PeriodoValidita/DURATA) counts for that share of the
+  year; a tiered discount (VALIDO_DA/VALIDO_FINO) applies only the tier with
+  the household's yearly kWh.
+- Variable offers (IDX_PREZZO_ENERGIA 01 PUN, 12 PUN Index GME): energy =
+  PUN × (1 + lambda) × COEFFICIENTE + the supplier's components. Losses apply
+  to the index only; the spread already includes them (portal rules, "Regole
+  per il calcolo della Spesa Annua Stimata" v4.0). The portal uses forward
+  prices that are not open data, so the PUN is the mean of the last 12 months
+  in the historical file: an estimate if prices stay as they were, shown as
+  such. If that file is missing or more than 6 months old, variable offers
+  are left out and fixed ones still publish. Other index codes (05, 08) and
+  peak/off-peak bands are not priced.
 - Offers limited to other regions (ZoneOfferta) are left out.
 - Excise is zero for residential ≤3 kW using ≤150 kWh a month.
 
 ## Not done yet
 
-- Variable-price offers: need the quarterly forward prices the portal uses.
+- Variable offers use one PUN figure for all bands (the open file has no
+  F1/F23 split) and lag the market by about three months.
 - F1/F2/F3 split is assumed 33/31/36%; a real bill gives the household's own.
 - Excise partial rule between 150 and 220 kWh a month.
 - Offers that need e-billing or direct debit are not flagged.

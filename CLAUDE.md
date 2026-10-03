@@ -1,9 +1,10 @@
 # Bolletta Chiara
 
 A free site that shows Italian households what they'd really pay per year for
-each fixed-price electricity offer: the offer's price plus network, system
-charges, dispatch, excise and VAT. Data: ARERA Portale Offerte open data,
-refreshed twice a day. Live at http://168.119.162.166/ (no domain yet).
+each fixed-price electricity offer (and an estimate for variable ones on the
+PUN): the offer's price plus network, system charges, dispatch, excise and VAT.
+Data: ARERA Portale Offerte open data, refreshed twice a day. Live at
+http://168.119.162.166/ (no domain yet).
 
 ## The owner
 
@@ -27,7 +28,8 @@ questions there (ArtifactData), never block on chat.
   refuses to publish broken data; `render.mjs` builds region pages + sitemap.
 - `site/calc.js` is the calculator (browser and Node); `bill.py` is an
   independent Python reference. After any calculation change:
-  `node tests/compare.mjs` must pass.
+  `node tests/rules.mjs && node tests/compare.mjs` must pass (needs
+  `python3 fetch.py` and `python3 prepare.py` first for the day's data).
 - Field codes follow the SII spec "Trasmissione Offerte Mercato Retail" v5.0;
   the README lists the rules applied.
 

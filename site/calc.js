@@ -1,6 +1,8 @@
-// Yearly cost of a household fixed-price electricity offer, from the
-// normalized offers.json (prepare.py). Same rules as bill.py, which
-// tests/compare.mjs uses as the reference.
+// Yearly cost of a household electricity offer, from the normalized
+// offers.json (prepare.py). Same rules as bill.py, which tests/compare.mjs
+// uses as the reference. Variable offers pay an index (PUN) plus the
+// supplier's spread; the index is the mean of the last 12 months
+// (data.index.pun), an estimate, not the portal's forward prices.
 
 // Assumed split of a household's use over the time bands, used when the
 // visitor doesn't give their own (a bill shows it).
@@ -37,9 +39,10 @@ export function fits(offer, kwh) {
 }
 
 // Returns the yearly breakdown in €, or null when the offer can't be priced.
-export function yearlyCost(offer, P, { kwh, kw, split = DEFAULT_SPLIT }) {
+export function yearlyCost(offer, P, { kwh, kw, split = DEFAULT_SPLIT, pun }) {
   const w = bandWeights(offer.bands, split);
   if (!w) return null;
+  if (offer.variable && !(pun > 0)) return null;
   const inTier = (i) => (i.from == null || kwh >= i.from) && (i.to == null || i.to === 0 || kwh <= i.to);
 
   let energy = 0, fixed = 0;
@@ -60,16 +63,23 @@ export function yearlyCost(offer, P, { kwh, kw, split = DEFAULT_SPLIT }) {
     else return null;
   }
 
+  // Network losses apply to the index only: the spread already includes them.
+  if (offer.variable) energy += pun * (1 + P.lambda) * offer.coef * kwh;
+
   let dispatch = 0;
   for (const d of offer.dispatch) {
     if (["01", "02", "14"].includes(d.code)) dispatch = Math.max(dispatch, P.cdispd * kwh);
     else if (d.code === "99") dispatch += (d.value || 0) * kwh;
   }
 
+  // A discount limited to fewer than 12 months counts for that share of the
+  // year (not one-off ones); a tiered discount applies only the household's tier.
   let discountVat = 0, discountNoVat = 0;
   for (const s of offer.discounts) {
-    const amount = { "01": s.value, "05": s.value, "02": s.value * kw, "03": s.value * kwh,
-                     "06": (s.value / 100) * (energy + fixed) }[s.unit] ?? 0;
+    if (!((s.from == null || kwh >= s.from) && (s.to == null || s.to === 0 || kwh <= s.to))) continue;
+    const share = s.unit !== "05" && s.months > 0 && s.months < 12 ? s.months / 12 : 1;
+    const amount = share * ({ "01": s.value, "05": s.value, "02": s.value * kw, "03": s.value * kwh,
+                              "06": (s.value / 100) * (energy + fixed) }[s.unit] ?? 0);
     if (s.vat) discountVat += amount; else discountNoVat += amount;
   }
 
@@ -84,13 +94,15 @@ export function yearlyCost(offer, P, { kwh, kw, split = DEFAULT_SPLIT }) {
            discount: discountVat + discountNoVat, vat };
 }
 
-// All offers for this household, cheapest first, malformed ones dropped.
-export function rank(data, { kwh, kw, region, province, split }) {
+// Offers of one kind (fixed, or variable) for this household, cheapest
+// first, malformed ones dropped.
+export function rank(data, { kwh, kw, region, province, split, variable = false }) {
   const rows = [];
   for (const o of data.offers) {
+    if (!!o.variable !== variable) continue;
     if (!fits(o, kwh) || !availableIn(o, region, province) || o.secondHome) continue;
-    const c = yearlyCost(o, data.params, { kwh, kw, split });
-    if (!c || c.energy / kwh < 0.02 || c.energy / kwh > 1) continue;
+    const c = yearlyCost(o, data.params, { kwh, kw, split, pun: data.index?.pun });
+    if (!c || c.energy / kwh < 0.02 || c.energy / kwh > 1 || c.total <= 0) continue;
     rows.push({ offer: o, ...c });
   }
   return rows.sort((a, b) => a.total - b.total);

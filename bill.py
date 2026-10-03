@@ -1,5 +1,6 @@
 """Yearly cost of every household fixed-price electricity offer on the
-Portale Offerte, following the SII spec "Trasmissione Offerte Mercato Retail"
+Portale Offerte (or, with BILL_KIND=variable, every variable offer on the PUN),
+following the SII spec "Trasmissione Offerte Mercato Retail"
 v5.0 (12/11/2025). Usage: python bill.py [kWh/year] [kW] [region] [province]
 
 Independent reference for the website's calculator (site/calc.js):
@@ -20,6 +21,20 @@ REGION = sys.argv[3] if len(sys.argv) > 3 else "03"      # ISTAT region code; 03
 PROVINCE = sys.argv[4] if len(sys.argv) > 4 else None   # ISTAT province code, e.g. 020 = Mantova
 # Assumed household split over the time bands (not in the open data).
 BANDS = {"01": 0.33, "02": 0.31, "03": 0.36}
+VARIABLE = os.environ.get("BILL_KIND") == "variable"
+
+def pun_last_12_months():
+    """Variable offers: PUN as the plain mean of the last 12 monthly values in the
+    portal's historical index file (the portal's own forward prices aren't public)."""
+    lines = open(newest("PO_Indici_Storici_*.csv"), encoding="latin-1").read().splitlines()
+    values = {}
+    for l in lines[1:]:
+        month, pun = (l.split(";") + ["", ""])[:2]
+        if len(month) == 6 and month.isdigit() and pun.strip():
+            values[month] = float(pun.replace(",", "."))
+    last12 = [values[m] for m in sorted(values)[-12:]]
+    assert len(last12) == 12, "fewer than 12 months of PUN"
+    return round(sum(last12) / 12, 6)
 
 P = {l.split(",")[0]: float(l.split(",")[1])
      for l in open(PARAMS, encoding="utf-8").read().splitlines()[1:]}
@@ -64,6 +79,9 @@ def cost(o):
     if w is None:
         return None
     energy = fixed = 0.0
+    if VARIABLE:                                    # index × losses (spec: losses on the index, not the spread)
+        coef = float(txt(o, "RiferimentiPrezzoEnergia/COEFFICIENTE") or 1)
+        energy += PUN * (1 + P["lambda"]) * coef * KWH
     for c in kids(o, "ComponenteImpresa"):
         macro, typ = txt(c, "MACROAREA"), txt(c, "TIPOLOGIA")
         if macro == "06" and typ == "02":           # optional green energy: not in the estimate
@@ -105,10 +123,17 @@ def cost(o):
             continue
         if txt(s, "VALIDITA") == "03":                             # only after 12 months
             continue
+        months = txt(s, "PeriodoValidita/DURATA")
+        months = int(months) if months and months.lstrip("-").isdigit() else -1
         for ps in kids(s, "PrezziSconto"):
+            lo, hi = txt(ps, "VALIDO_DA"), txt(ps, "VALIDO_FINO")
+            if (lo and KWH < float(lo)) or (hi and float(hi) and KWH > float(hi)):
+                continue                            # tiered discount: only the household's tier
             v, unit = float(txt(ps, "PREZZO")), txt(ps, "UNITA_MISURA")
             amount = {"01": v, "05": v, "02": v * KW, "03": v * KWH,
                       "06": v / 100 * (energy + fixed)}.get(unit, 0.0)
+            if unit != "05" and 0 < months < 12:    # limited to some months: that share of the year
+                amount *= months / 12
             if txt(s, "IVA_SCONTO") == "02":
                 discount_novat += amount
             else:
@@ -137,9 +162,15 @@ def second_home(o):
     words = " ".join((x.text or "") for x in o.iter() if tag(x) in ("NOME_OFFERTA", "DESCRIZIONE")).lower()
     return "seconda casa" in words or "non resident" in words
 
+PUN = pun_last_12_months() if VARIABLE else None
 rows, skipped, regional = [], 0, 0
 for o in ET.parse(OFFERS).getroot():
-    if txt(o, "DettaglioOfferta/TIPO_CLIENTE") != "01" or txt(o, "DettaglioOfferta/TIPO_OFFERTA") != "01":
+    if txt(o, "DettaglioOfferta/TIPO_CLIENTE") != "01":
+        continue
+    if VARIABLE:
+        if txt(o, "DettaglioOfferta/TIPO_OFFERTA") != "02" or txt(o, "RiferimentiPrezzoEnergia/IDX_PREZZO_ENERGIA") not in ("01", "12"):
+            continue
+    elif txt(o, "DettaglioOfferta/TIPO_OFFERTA") != "01":
         continue
     lo, hi = txt(o, "CaratteristicheOfferta/CONSUMO_MIN"), txt(o, "CaratteristicheOfferta/CONSUMO_MAX")
     if (lo and KWH < float(lo)) or (hi and float(hi) and KWH > float(hi)):
@@ -150,7 +181,7 @@ for o in ET.parse(OFFERS).getroot():
     if second_home(o):                              # priced for residents here
         continue
     c = cost(o)
-    if c is None or not (0.02 <= c["energy"] / KWH <= 1.0):   # malformed offers (e.g. €/MWh as €/kWh)
+    if c is None or not (0.02 <= c["energy"] / KWH <= 1.0) or c["total"] <= 0:   # malformed (e.g. €/MWh as €/kWh)
         skipped += 1
         continue
     c["key"] = txt(o, "IdentificativiOfferta/PIVA_UTENTE") + "/" + txt(o, "IdentificativiOfferta/COD_OFFERTA")
@@ -164,7 +195,7 @@ if os.environ.get("BILL_JSON"):                     # reference output for tests
     import json
     json.dump({r["key"]: round(r["total"], 2) for r in rows}, sys.stdout)
     sys.exit()
-print(f"{KWH:.0f} kWh/year, {KW} kW, resident: {len(rows)} fixed offers priced in region {REGION}, {regional} only sold elsewhere, {skipped} unreadable")
+print(f"{KWH:.0f} kWh/year, {KW} kW, resident: {len(rows)} {'variable (PUN ' + str(PUN) + ')' if VARIABLE else 'fixed'} offers priced in region {REGION}, {regional} only sold elsewhere, {skipped} unreadable")
 pick = lambda q: rows[round(q * (len(rows) - 1))]
 for label, r in [("cheapest", rows[0]), ("10%", pick(.1)), ("25%", pick(.25)),
                  ("median", pick(.5)), ("75%", pick(.75)), ("dearest", rows[-1])]:
