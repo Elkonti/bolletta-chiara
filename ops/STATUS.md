@@ -14,3 +14,9 @@ One dated line per work cycle: what shipped, what's next, what's blocked.
   the live data has no index, so the live page is unchanged (checked). New tests/page.mjs
   runs app.js on a fake page. Still blocked: q7 (deploy permissions), q2 (domain). Next
   Bolletta: bill PDF reading in the browser (backlog 3).
+- 2026-10-03 13:30 — Shipped 786ef42 + 3850a1a: bill PDF reading in the browser (pdf.js
+  4.10.38 self-hosted, checksum verified; nothing uploaded). Right on 3 public sample bills
+  (Enel 2025, Edison, Facile Energy 2025). Live: files served as JS, the deployed reader reads
+  the Enel sample correctly; not yet tried in a real browser (no browser here; HQ q14). Still
+  blocked: q7 (deploy permissions: variable offers), q2 (domain). Next Bolletta: region from
+  CAP, or small-business offers (backlog 4).
