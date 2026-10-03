@@ -38,3 +38,17 @@ Field codes follow the SII spec
 - Excise partial rule between 150 and 220 kWh a month.
 - Offers that need e-billing or direct debit are not flagged.
 - Not yet checked against the portal's own simulation.
+
+## Live site and deployment
+
+Live at http://168.119.162.166/ (Hetzner, Caddy). No server code: the site is
+static and the calculation runs in the visitor's browser.
+
+- `git push server HEAD:main` deploys: the server's hook checks out the code
+  and republishes (`deploy/post-receive`).
+- `bolletta-refresh.timer` runs `deploy/refresh.sh` at 08:30 and 14:30
+  Europe/Rome: download, `prepare.py`, publish. A failed step keeps the
+  previous data online. Logs: `journalctl -u bolletta-refresh`.
+- Server setup from scratch: `ssh pvadmin@server 'sudo sh -s' < deploy/setup.sh`,
+  push, check out once, run setup again (see the script).
+- Before changing the calculation: `node tests/compare.mjs` must pass.
