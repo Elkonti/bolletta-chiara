@@ -8,8 +8,8 @@ questions live on the HQ page: https://claude.ai/artifact/235ToScji2VSVcK231N148
 2. Variable-price offers: calculation (080a533) and page choice (f89c371) done and tested.
    Waiting for the deploy permission fix (HQ q7): then push, check live, and add them to
    region pages. Better index data needs GME consent (HQ q8).
-3. Bill PDF reading: shipped (3850a1a): consumption, power, bands when plain. Next steps:
-   region from the supply address CAP; more sample layouts (A2A, Hera, Plenitude, Iren:
+3. Bill PDF reading: shipped (3850a1a, region f2e4d88): consumption, power, region, bands
+   when plain. Next steps: more sample layouts (A2A, Hera, Plenitude, Iren:
    no public text PDF found yet); owner test in a real browser (HQ q14).
 4. Small-business (PMI) offers: second audience, bigger bills.
 5. Check totals against the official portal (owner's numbers in HQ q5).

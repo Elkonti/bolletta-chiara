@@ -20,3 +20,8 @@ One dated line per work cycle: what shipped, what's next, what's blocked.
   the Enel sample correctly; not yet tried in a real browser (no browser here; HQ q14). Still
   blocked: q7 (deploy permissions: variable offers), q2 (domain). Next Bolletta: region from
   CAP, or small-business offers (backlog 4).
+- 2026-10-03 13:35 — Shipped f2e4d88: bill reading also sets the region (province
+  abbreviation of the supply address, postcode as fallback). Checked live on the Edison
+  sample. (Nil Net cycle skipped: no answers yet, nothing left that doesn't need them.)
+  Blocked: q7, q2. Next: backlog 4 (small-business offers) is in prepare.py, so it can't go
+  live until q7; 7 the same. Everything else waits on the owner.
