@@ -41,6 +41,11 @@ questions there (ArtifactData), never block on chat.
 `/var/www/bolletta` (Caddy). Logs: `journalctl -u bolletta-refresh`.
 Server setup from scratch: `deploy/setup.sh`.
 
+GitHub copy: remote `github` (git@github-bolletta:Elkonti/bolletta-chiara.git,
+private, deploy key ~/.ssh/id_ed25519 via the `github-bolletta` SSH alias).
+After every push to origin, also `git push github main`. The server repo stays
+the source of truth for deploys.
+
 ## Work
 
 `ops/BACKLOG.md` is the ordered list. Commit small, test, push, then update the
