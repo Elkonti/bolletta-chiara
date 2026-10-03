@@ -8,8 +8,8 @@ day at the source never replaces a good file on the site."""
 import glob, json, os, sys, datetime, xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(ROOT, "data")
-OUT = os.path.join(ROOT, "site", "data", "offers.json")
+DATA = os.environ.get("BOLLETTA_DATA") or os.path.join(ROOT, "data")
+OUT = os.environ.get("BOLLETTA_OUT") or os.path.join(ROOT, "site", "data", "offers.json")
 MIN_OFFERS = 150            # a normal day has 400+; far fewer means a broken file
 
 def newest(pattern):
@@ -96,7 +96,7 @@ def main():
                    "source": "ARERA – Portale Offerte, open data",
                    "params": params, "offers": offers}, f, ensure_ascii=False, separators=(",", ":"))
     os.replace(tmp, OUT)
-    print(f"{len(offers)} offers for {day} → {os.path.relpath(OUT, ROOT)} ({os.path.getsize(OUT) / 1e3:.0f} kB)")
+    print(f"{len(offers)} offers for {day} → {OUT} ({os.path.getsize(OUT) / 1e3:.0f} kB)")
 
 if __name__ == "__main__":
     main()

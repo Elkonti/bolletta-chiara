@@ -1,0 +1,15 @@
+[Unit]
+Description=Bolletta Chiara: download ARERA offers and publish the site
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=bolletta
+Group=bolletta
+ExecStart=/bin/sh /srv/bolletta/app/deploy/refresh.sh
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/bolletta /var/www/bolletta

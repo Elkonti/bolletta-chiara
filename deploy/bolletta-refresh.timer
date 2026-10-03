@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh Bolletta Chiara data twice a day
+
+[Timer]
+# ARERA publishes the day's files during the morning; the second run catches late days.
+OnCalendar=*-*-* 08:30:00 Europe/Rome
+OnCalendar=*-*-* 14:30:00 Europe/Rome
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target
