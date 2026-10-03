@@ -25,3 +25,8 @@ One dated line per work cycle: what shipped, what's next, what's blocked.
   sample. (Nil Net cycle skipped: no answers yet, nothing left that doesn't need them.)
   Blocked: q7, q2. Next: backlog 4 (small-business offers) is in prepare.py, so it can't go
   live until q7; 7 the same. Everything else waits on the owner.
+- 2026-10-03 19:10 — Shipped 57516be at the owner's request: new look on Start Bootstrap
+  "Landing Page" (MIT), self-hosted with Bootstrap Icons; green gradient masthead with the
+  calculator card, promises, explanation blocks. Live: all files local, served with the right
+  types; tests pass. Not seen in a real browser (none here). Region pages keep the old style
+  until render.mjs can deploy (q7). GitHub copy now pushed with every commit.

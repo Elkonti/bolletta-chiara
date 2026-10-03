@@ -46,6 +46,15 @@ Field codes follow the SII spec
 - Offers limited to other regions (ZoneOfferta) are left out.
 - Excise is zero for residential ≤3 kW using ≤150 kWh a month.
 
+## Look
+
+The page uses the Start Bootstrap "Landing Page" layout (MIT, Bootstrap 5.2.3
+CSS) with Bootstrap Icons, both self-hosted in `site/vendor/` (sources in
+each `SOURCE.txt`). `site/app.css` holds the brand colours, system fonts, the
+gradient masthead (no stock photos) and the results list. Region pages still
+use `page.css`; moving them to the same look needs `render.mjs`, which waits
+for the deploy permission fix.
+
 ## Reading the bill PDF
 
 The visitor can pick their bill PDF; `site/billread.js` reads it in the
