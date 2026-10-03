@@ -118,6 +118,8 @@ $("pdf").addEventListener("change", async () => {
   const found = [];
   if (r?.kwh) { $("kwh").value = Math.round(r.kwh); found.push(`consumo annuo ${Math.round(r.kwh).toLocaleString("it-IT")} kWh`); }
   if (r?.kw) { $("kw").value = r.kw; found.push(`potenza ${r.kw.toLocaleString("it-IT")} kW`); }
+  const reg = r?.region && REGIONS.find(([c]) => c === r.region);
+  if (reg) { $("region").value = reg[0]; found.push(`regione ${reg[1]}`); }
   if (r?.bands && r.bands.f2 != null) { // F1/F23 only: the form needs F1 and F2, keep the typical split
     $("f1").value = Math.round(r.bands.f1 * 100);
     $("f2").value = Math.round(r.bands.f2 * 100);

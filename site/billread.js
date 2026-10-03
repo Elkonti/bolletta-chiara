@@ -76,11 +76,46 @@ function plainBands(t) {
   return null;
 }
 
+// Region (ISTAT code, as in the form) from the supply address: the province
+// abbreviation after the town is exact; the postcode's first two digits are
+// the fallback. Only the supply address (where the electricity is used), not
+// the billing address.
+const PROVINCES = {
+  "01": "TO VC NO CN AT AL BI VB", "02": "AO", "03": "VA CO SO MI BG BS PV CR MN LC LO MB", "04": "BZ TN",
+  "05": "VR VI BL TV VE PD RO", "06": "UD GO TS PN", "07": "IM SV GE SP", "08": "PC PR RE MO BO FE RA FC RN",
+  "09": "MS LU PT FI LI PI AR SI GR PO", "10": "PG TR", "11": "PU AN MC AP FM", "12": "VT RI RM LT FR",
+  "13": "AQ TE PE CH", "14": "CB IS", "15": "CE BN NA AV SA", "16": "FG BA TA BR LE BT", "17": "PZ MT",
+  "18": "CS CZ RC KR VV", "19": "TP PA ME AG CL EN CT RG SR", "20": "SS NU CA OR SU OT OG VS CI",
+};
+const BY_PROVINCE = Object.fromEntries(Object.entries(PROVINCES).flatMap(([r, ps]) => ps.split(" ").map((p) => [p, r])));
+const CAP_PREFIX = {
+  "00": "12", "01": "12", "02": "12", "03": "12", "04": "12", "05": "10", "06": "10", "07": "20", "08": "20", "09": "20",
+  "10": "01", "11": "02", "12": "01", "13": "01", "14": "01", "15": "01", "16": "07", "17": "07", "18": "07", "19": "07",
+  "20": "03", "21": "03", "22": "03", "23": "03", "24": "03", "25": "03", "26": "03", "27": "03", "28": "01", "29": "08",
+  "30": "05", "31": "05", "32": "05", "33": "06", "34": "06", "35": "05", "36": "05", "37": "05", "38": "04", "39": "04",
+  "40": "08", "41": "08", "42": "08", "43": "08", "44": "08", "45": "05", "46": "03", "47": "08", "48": "08",
+  "50": "09", "51": "09", "52": "09", "53": "09", "54": "09", "55": "09", "56": "09", "57": "09", "58": "09", "59": "09",
+  "60": "11", "61": "11", "62": "11", "63": "11", "64": "13", "65": "13", "66": "13", "67": "13",
+  "70": "16", "71": "16", "72": "16", "73": "16", "74": "16", "75": "17", "76": "16",
+  "80": "15", "81": "15", "82": "15", "83": "15", "84": "15", "85": "17", "86": "14", "87": "18", "88": "18", "89": "18",
+  "90": "19", "91": "19", "92": "19", "93": "19", "94": "19", "95": "19", "96": "19", "97": "19", "98": "19",
+};
+function region(t) {
+  for (const m of t.matchAll(/(?:indirizzo|punto) di fornitura|indirizzo della fornitura|luogo di fornitura/gi)) {
+    const after = t.slice(m.index + m[0].length, m.index + m[0].length + 160);
+    const a = after.match(/\b(\d{5})\s+[A-Za-zÀ-ÿ'. -]{2,40}?\s*\(?\b([A-Z]{2})\b\)?/);
+    const cap = a?.[1] ?? after.match(/\b(\d{5})\b/)?.[1];
+    if (!cap || /^0+$/.test(cap)) continue; // "00000" is a placeholder, not a postcode
+    return BY_PROVINCE[a?.[2]] ?? CAP_PREFIX[cap.slice(0, 2)] ?? null;
+  }
+  return null;
+}
+
 // What we could read, or null for each value we couldn't.
 export function parseBill(text) {
-  const t = text.replace(/ /g, " ").replace(/[ \t]+/g, " ");
+  const t = text.replace(/\u00a0/g, " ").replace(/[ \t]+/g, " ");
   const a = annual(t);
-  return { kwh: a.kwh, kw: power(t), bands: a.bands || plainBands(t) };
+  return { kwh: a.kwh, kw: power(t), bands: a.bands || plainBands(t), region: region(t) };
 }
 
 // PDF bytes → text, via the self-hosted pdf.js. Only the first 4 pages: the

@@ -47,13 +47,15 @@ has(p.out.innerHTML, /offerte a prezzo fisso per/);
 // Bill PDF picked: the form is filled from it and the visitor told what was read.
 p = await page(data, "fixed");
 const bytes = readFileSync(new URL("fixtures/bolletta-sintetica.pdf", import.meta.url));
+p.region.value = "12"; // the bill (Brescia) must change it
 p.pdf.files = [{ arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length) }];
 await p.pdf.handlers.change();
 assert.equal(String(p.kwh.value), "2345");
 assert.equal(String(p.kw.value), "3");
 assert.equal(String(p.f1.value), "34"); assert.equal(String(p.f2.value), "29");
 assert.equal(p.adv.open, true);
-has(p.pdfmsg.textContent, /Dalla bolletta: consumo annuo 2\.?345 kWh, potenza 3 kW, fasce F1 34%, F2 29%/);
+has(p.pdfmsg.textContent, /Dalla bolletta: consumo annuo 2\.?345 kWh, potenza 3 kW, regione Lombardia, fasce F1 34%, F2 29%/);
+assert.equal(p.region.value, "03");
 has(p.out.innerHTML, /offerte a prezzo fisso per 2\.?345 kWh/);
 // A file that isn't a readable PDF: nothing filled, clear message.
 p = await page(data, "fixed");

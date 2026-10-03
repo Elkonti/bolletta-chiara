@@ -40,11 +40,20 @@ r = parseBill("F1 300 kWh\nF23 700 kWh");
 near(r.bands.f1, 0.3); assert.equal(r.bands.f2, null);
 assert.equal(parseBill("nessun dato").bands, null);
 
+// Region from the supply address: province abbreviation, else postcode.
+assert.equal(parseBill("INDIRIZZO DI FORNITURA:\nVIA TANARO 35 00040 ARDEA RM").region, "12");
+assert.equal(parseBill("Punto di fornitura VIA LEMMI 70\n20100 MILANO MI").region, "03");
+assert.equal(parseBill("Indirizzo di fornitura: Via Roma 1, 39100 Bolzano (BZ)").region, "04");
+assert.equal(parseBill("Indirizzo di fornitura: Via Roma 1, 98122 Messina").region, "19");   // no abbreviation: postcode
+assert.equal(parseBill("Indirizzo di fornitura VIA XXXXXXX, 00 - 00000 CITTÀ (XX)").region, null); // placeholder
+assert.equal(parseBill("Recapito: Via Roma 1, 20100 Milano MI").region, null);                // not the supply address
+
 // End to end: synthetic one-page PDF (tests/fixtures, made with tests/makepdf.py).
 const pdf = new Uint8Array(readFileSync(new URL("fixtures/bolletta-sintetica.pdf", import.meta.url)));
 const text = await pdfText(pdf, new URL("../site/vendor/pdfjs/", import.meta.url).href);
 r = parseBill(text);
 assert.equal(r.kwh, 2345); assert.equal(r.kw, 3);
 near(r.bands.f1, 210 / 620); near(r.bands.f2, 180 / 620);
+assert.equal(r.region, "03"); // 25121 Brescia BS
 
-console.log("ok   billread: labels, number formats, bands, synthetic PDF through pdf.js");
+console.log("ok   billread: labels, number formats, bands, region, real layouts, synthetic PDF");

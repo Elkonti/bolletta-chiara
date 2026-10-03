@@ -50,7 +50,8 @@ Field codes follow the SII spec
 
 The visitor can pick their bill PDF; `site/billread.js` reads it in the
 browser with pdf.js (self-hosted in `site/vendor/pdfjs`, version and checksum
-in `SOURCE.txt`) and fills consumption, power and band split. The file is
+in `SOURCE.txt`) and fills consumption, power, band split and region (from the province
+abbreviation or postcode of the supply address, never the billing address). The file is
 never uploaded, and pdf.js loads only when a file is picked. Scanned bills
 (images) can't be read; the form says so and manual entry stays. Patterns
 are tested on text cases, the layouts of public sample bills (Enel 2025,
