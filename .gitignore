@@ -1,3 +1,6 @@
 data/
 __pycache__/
 .venv/
+site/luce/
+site/sitemap.xml
+site/robots.txt

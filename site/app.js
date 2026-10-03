@@ -15,9 +15,17 @@ const link = (u) => !u ? "" : (/^https?:\/\//i.test(u) ? u : "https://" + u);
 $("region").innerHTML = REGIONS.map(([c, n]) => `<option value="${c}">${n}</option>`).join("");
 try { $("region").value = localStorage.getItem("region") || "03"; } catch { $("region").value = "03"; }
 
-let data;
-const ready = fetch("data/offers.json").then((r) => r.json()).then((d) => {
-  data = d;
+// A region page links here with ?regione=NN.
+const wanted = new URLSearchParams(location.search).get("regione");
+if (wanted && REGIONS.some(([c]) => c === wanted)) $("region").value = wanted;
+
+let data, affiliates = { suppliers: {} };
+const ready = Promise.all([
+  fetch("data/offers.json").then((r) => r.json()),
+  fetch("affiliates.json").then((r) => r.json()).catch(() => affiliates),
+]).then(([d, a]) => {
+  data = d; affiliates = a;
+  $("disclosure").textContent = Object.keys(a.suppliers).length ? a.disclosureWithLinks : "Non riceve commissioni.";
   $("asof").textContent = ` (dati del ${new Date(d.date).toLocaleDateString("it-IT")})`;
 });
 
@@ -31,6 +39,14 @@ const PARTS = [
   ["vat", "IVA", "--bar-tax"],
 ];
 
+// The affiliate link changes only where the button goes, never the order.
+function offerButton(o) {
+  const a = affiliates.suppliers[o.id.split("/")[0]];
+  return a
+    ? `<p><a href="${esc(a.url)}" rel="sponsored noopener" target="_blank">Vai all'offerta</a> <small>(link con commissione)</small></p>`
+    : `<p><a href="${esc(link(o.url || o.site))}" rel="noopener nofollow" target="_blank">Scheda dell'offerta sul sito del fornitore</a></p>`;
+}
+
 function row(r, kwh) {
   const o = r.offer;
   const months = o.durationMonths > 0 && o.durationMonths < 99 ? `prezzo bloccato ${o.durationMonths} mesi` : "durata prezzo non indicata";
@@ -43,7 +59,7 @@ function row(r, kwh) {
   return `<li><details><summary><span class="name">${esc(o.name)}</span><span class="price">${eur(r.total)}</span>
     <span class="meta">${esc((o.site || "").replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""))} · ${per(r.total / kwh)} tutto incluso · ${months}</span></summary>
     <div class="detail"><div class="bar" aria-hidden="true">${bar}</div><table>${lines}</table>${conds}
-    <p><a href="${esc(link(o.url || o.site))}" rel="noopener nofollow" target="_blank">Scheda dell'offerta sul sito del fornitore</a></p></div></details></li>`;
+    ${offerButton(o)}</div></details></li>`;
 }
 
 function render() {
@@ -79,3 +95,6 @@ function render() {
 
 $("f").addEventListener("submit", async (e) => { e.preventDefault(); await ready; render(); });
 ready.then(render).catch(() => { $("out").innerHTML = `<p class="note"><b>Dati non disponibili.</b> Riprova tra qualche minuto.</p>`; $("out").hidden = false; });
+
+// Installable app and offline use (browsers allow it only over HTTPS).
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});

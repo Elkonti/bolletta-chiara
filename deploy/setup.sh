@@ -2,7 +2,7 @@
 # One-time server setup (Ubuntu), run with sudo. Safe to run again.
 set -eu
 apt-get update -q
-apt-get install -y -q caddy git python3
+apt-get install -y -q caddy git python3 nodejs
 id bolletta >/dev/null 2>&1 || useradd --system --home /var/lib/bolletta --shell /usr/sbin/nologin bolletta
 install -d -o pvadmin -g pvadmin /srv/bolletta /srv/bolletta/app
 install -d -o bolletta -g bolletta /var/lib/bolletta /var/lib/bolletta/data /var/www/bolletta

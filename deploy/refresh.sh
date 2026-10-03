@@ -10,9 +10,20 @@ export BOLLETTA_OUT=/var/lib/bolletta/offers.json
 python3 "$APP/fetch.py"
 python3 "$APP/prepare.py"
 
-# Publish: copy the page files, then swap in the new data in one step.
+# Region pages for search engines, built in a staging folder first.
+STAGE=/var/lib/bolletta/stage
+rm -rf "$STAGE" && mkdir -p "$STAGE"
+node "$APP/render.mjs" "$BOLLETTA_OUT" "$STAGE"
+
+# Publish: page files, region pages, then swap in the new data in one step.
 mkdir -p "$WWW/data"
-cp "$APP"/site/*.html "$APP"/site/*.js "$WWW/"
+cd "$APP/site"
+cp index.html app.js calc.js sw.js page.css icon.svg manifest.webmanifest "$WWW/"
+cp "$APP/affiliates.json" "$WWW/"
+cp "$STAGE/sitemap.xml" "$STAGE/robots.txt" "$WWW/"
+rm -rf "$WWW/luce.new" && cp -r "$STAGE/luce" "$WWW/luce.new"
+rm -rf "$WWW/luce.old" && { [ -d "$WWW/luce" ] && mv "$WWW/luce" "$WWW/luce.old" || true; }
+mv "$WWW/luce.new" "$WWW/luce" && rm -rf "$WWW/luce.old"
 cp "$BOLLETTA_OUT" "$WWW/data/offers.json.new"
 mv "$WWW/data/offers.json.new" "$WWW/data/offers.json"
 

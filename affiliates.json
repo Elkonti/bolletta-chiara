@@ -1,0 +1,6 @@
+{
+  "_comment": "Affiliate links per supplier, keyed by the supplier's VAT number (first part of an offer id). Empty until the owner has signed up with a network. The ranking never reads this file: it only changes where a button goes and adds the 'link con commissione' label.",
+  "disclosure": "Nessun link su questa pagina ci fa guadagnare commissioni.",
+  "disclosureWithLinks": "Alcuni link sono contrassegnati \"link con commissione\": se attivi l'offerta da lì il fornitore ci paga una commissione. La classifica è calcolata solo sul costo e non cambia.",
+  "suppliers": {}
+}
