@@ -9,3 +9,8 @@ One dated line per work cycle: what shipped, what's next, what's blocked.
   root files (prepare.py…) failed with "Permission denied" (app folder not group-writable).
   Live results checked unchanged (Lombardia 2,700 kWh: 798 / median 1,032). Blocked: deploy
   permissions (HQ q7), domain (q2). Next: variable-offer UI once q7 is done; meanwhile Nil Net.
+- 2026-10-03 12:45 — Shipped f89c371: "Tipo di prezzo" fixed/variable choice on the page,
+  variable results open with an estimate note (PUN months used, portal differs). Hidden while
+  the live data has no index, so the live page is unchanged (checked). New tests/page.mjs
+  runs app.js on a fake page. Still blocked: q7 (deploy permissions), q2 (domain). Next
+  Bolletta: bill PDF reading in the browser (backlog 3).
