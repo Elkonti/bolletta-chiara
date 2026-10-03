@@ -10,130 +10,134 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <meta name="description" content="Quanto pagheresti davvero in un anno con ogni offerta luce a prezzo fisso: prezzo, rete, oneri, accise e IVA. Nessuna registrazione, nessun numero di telefono.">
-<style>
-/* Layout: one narrow column. Form, then a summary line, then the ranked offers as rows with an expandable cost breakdown. System fonts only: the page loads nothing from third parties. */
-:root {
-  --bg: #f6f7f4; --surface: #ffffff; --ink: #1d2420; --muted: #5d6862; --line: #dfe3dd;
-  --accent: #0f6b4f; --accent-ink: #ffffff; --accent-soft: #e3f1ea; --warn: #8a5a00; --warn-soft: #fbf1dc;
-  --bar-energy: #0f6b4f; --bar-fee: #5f9e86; --bar-net: #9aa7a0; --bar-tax: #c9a24a;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #121614; --surface: #1a201d; --ink: #e6ebe7; --muted: #9aa69f; --line: #2c3530;
-    --accent: #5cc79c; --accent-ink: #0d1a14; --accent-soft: #1d3329; --warn: #e2b55a; --warn-soft: #33290f;
-    --bar-energy: #5cc79c; --bar-fee: #3f8f70; --bar-net: #66736c; --bar-tax: #b38d3a;
-    color-scheme: dark;
-  }
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--sans); }
-main { max-width: 46rem; margin: 0 auto; padding-block: 2rem 4rem; padding-inline: 16px; display: grid; gap: 1.5rem; }
-h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
-h2 { font-size: 1.1rem; margin: 0; text-wrap: balance; }
-p { margin: 0; }
-.lead { color: var(--muted); max-width: 38rem; }
-.promise { display: flex; flex-wrap: wrap; gap: .4rem; }
-.promise span { font-size: .8rem; background: var(--accent-soft); color: var(--ink); border-radius: 999px; padding: .15rem .65rem; }
-form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem; display: grid; gap: 1rem; }
-.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; }
-label { display: grid; gap: .3rem; font-weight: 600; font-size: .9rem; }
-label small { font-weight: 400; color: var(--muted); }
-input, select { font: inherit; padding: .55rem .6rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; }
-input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.pdf { display: grid; gap: .4rem; padding: .8rem; border: 1px dashed var(--line); border-radius: 8px; }
-.pdf input { font: inherit; font-size: .9rem; }
-.pdfmsg { font-size: .9rem; margin: 0; }
-.kind { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; }
-.kind legend { font-weight: 600; font-size: .9rem; padding: 0; margin-bottom: .3rem; width: 100%; }
-.kind label { display: flex; align-items: center; gap: .4rem; font-weight: 400; font-size: .95rem; }
-details.adv summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
-details.adv .fields { margin-top: .8rem; }
-button { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: .65rem 1.1rem; cursor: pointer; justify-self: start; }
-.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem; display: grid; gap: .8rem; }
-.figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
-.figs div { display: grid; gap: .1rem; }
-.figs b { font-size: clamp(1.1rem, 4.5vw, 1.4rem); font-variant-numeric: tabular-nums; }
-.figs span { font-size: .8rem; color: var(--muted); }
-.save { background: var(--accent-soft); border-radius: 8px; padding: .7rem .8rem; }
-.note { background: var(--warn-soft); color: var(--ink); border-radius: 8px; padding: .7rem .8rem; font-size: .9rem; }
-.note b { color: var(--warn); }
-ol.offers { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; counter-reset: rank; }
-ol.offers > li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; counter-increment: rank; }
-ol.offers details > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 2rem 1fr auto; gap: .2rem .8rem; align-items: baseline; padding: .75rem .9rem; }
-ol.offers details > summary::-webkit-details-marker { display: none; }
-ol.offers details > summary::before { content: counter(rank); color: var(--muted); font-variant-numeric: tabular-nums; font-size: .9rem; }
-.name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
-.price { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.meta { grid-column: 2 / 4; color: var(--muted); font-size: .82rem; }
-.detail { padding: 0 .9rem .9rem 3.7rem; display: grid; gap: .6rem; }
-.bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); }
-.bar i { display: block; height: 100%; }
-table { border-collapse: collapse; width: 100%; font-size: .88rem; }
-td { padding: .2rem 0; border-bottom: 1px solid var(--line); }
-td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-tr:last-child td { border-bottom: 0; font-weight: 700; }
-.sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .4rem; vertical-align: -1px; }
-.detail a { color: var(--accent); }
-.cond { font-size: .82rem; color: var(--muted); }
-.more { justify-self: center; background: transparent; color: var(--accent); border: 1px solid var(--line); }
-#out:not([hidden]) { display: grid; gap: 1rem; }
-footer { color: var(--muted); font-size: .82rem; display: grid; gap: .5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
-footer a { color: inherit; }
-@media (max-width: 480px) { .detail { padding-left: .9rem; } }
-</style>
+<link rel="stylesheet" href="vendor/landing/styles.css">
+<link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.min.css">
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
-<main>
-  <header style="display:grid;gap:.7rem">
-    <h1>Quanto pagheresti davvero per la luce?</h1>
-    <p class="lead">Il costo di un anno con ogni offerta a prezzo fisso del mercato libero, comprese le voci che non si vedono nel prezzo pubblicizzato: rete, oneri di sistema, dispacciamento, accise e IVA.</p>
-    <div class="promise"><span>Nessuna registrazione</span><span>Nessun numero di telefono</span><span>Nessun dato inviato</span></div>
-  </header>
+<!-- Layout: Start Bootstrap "Landing Page" (MIT), see vendor/landing/SOURCE.txt. -->
+<nav class="navbar navbar-light bg-light static-top border-bottom">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="./"><i class="bi-lightning-charge-fill text-primary"></i> Bolletta Chiara</a>
+    <a class="btn btn-primary" href="#f">Confronta</a>
+  </div>
+</nav>
 
-  <form id="f">
-    <div class="pdf">
-      <label for="pdf">Hai la bolletta in PDF? Leggo i dati da lì<small>Il file resta sul tuo dispositivo: non viene inviato a nessuno.</small>
-        <input id="pdf" type="file" accept="application/pdf,.pdf"></label>
-      <p class="pdfmsg" id="pdfmsg" role="status" hidden></p>
-    </div>
-    <div class="fields">
-      <label for="kwh">Consumo annuo (kWh)<small>Sulla bolletta: "consumo annuo"</small>
-        <input id="kwh" type="number" min="100" max="20000" step="10" value="2700" required></label>
-      <label for="kw">Potenza impegnata (kW)<small>Di solito 3 kW</small>
-        <input id="kw" type="number" min="1" max="10" step="0.5" value="3" required></label>
-      <label for="region">Regione<small>Alcune offerte sono solo locali</small>
-        <select id="region"></select></label>
-    </div>
-    <fieldset class="kind" id="kind" hidden>
-      <legend>Tipo di prezzo</legend>
-      <label><input type="radio" name="kind" value="fixed" checked> Fisso</label>
-      <label><input type="radio" name="kind" value="variable"> Variabile <small>(stima)</small></label>
-    </fieldset>
-    <details class="adv">
-      <summary>Altri dati dalla bolletta (facoltativi)</summary>
-      <div class="fields">
-        <label for="now">Quanto spendi oggi in un anno (€)<small>Per calcolare il risparmio</small>
-          <input id="now" type="number" min="0" step="1" placeholder="es. 1100"></label>
-        <label for="f1">Consumo in F1 (%)<small>Giorni feriali 8–19. Senza: 33%</small>
-          <input id="f1" type="number" min="0" max="100" step="1" placeholder="33"></label>
-        <label for="f2">Consumo in F2 (%)<small>Sere e sabato. Senza: 31%</small>
-          <input id="f2" type="number" min="0" max="100" step="1" placeholder="31"></label>
+<header class="masthead">
+  <div class="container position-relative">
+    <div class="row justify-content-center">
+      <div class="col-xl-9 col-lg-10">
+        <div class="text-center text-white mb-4">
+          <h1 class="mb-3">Quanto pagheresti davvero per la luce?</h1>
+          <p class="lead mb-3">Il costo di un anno con ogni offerta del mercato libero, comprese le voci che non si vedono nel prezzo pubblicizzato: rete, oneri di sistema, dispacciamento, accise e IVA.</p>
+          <div class="promise"><span><i class="bi-person-x"></i> Nessuna registrazione</span><span><i class="bi-telephone-x"></i> Nessun numero di telefono</span><span><i class="bi-shield-lock"></i> Nessun dato inviato</span></div>
+        </div>
+
+        <form id="f" class="calc card shadow-lg border-0">
+          <div class="card-body p-3 p-md-4">
+            <div class="pdf mb-3">
+              <label for="pdf"><span><i class="bi-file-earmark-pdf text-primary"></i> Hai la bolletta in PDF? Leggo i dati da lì</span><small>Il file resta sul tuo dispositivo: non viene inviato a nessuno.</small>
+                <input id="pdf" class="form-control" type="file" accept="application/pdf,.pdf"></label>
+              <p class="pdfmsg" id="pdfmsg" role="status" hidden></p>
+            </div>
+            <div class="fields mb-3">
+              <label for="kwh">Consumo annuo (kWh)<small>Sulla bolletta: "consumo annuo"</small>
+                <input id="kwh" class="form-control" type="number" min="100" max="20000" step="10" value="2700" required></label>
+              <label for="kw">Potenza impegnata (kW)<small>Di solito 3 kW</small>
+                <input id="kw" class="form-control" type="number" min="1" max="10" step="0.5" value="3" required></label>
+              <label for="region">Regione<small>Alcune offerte sono solo locali</small>
+                <select id="region" class="form-select"></select></label>
+            </div>
+            <fieldset class="kind mb-3" id="kind" hidden>
+              <legend>Tipo di prezzo</legend>
+              <label><input class="form-check-input" type="radio" name="kind" value="fixed" checked> Fisso</label>
+              <label><input class="form-check-input" type="radio" name="kind" value="variable"> Variabile <small>(stima)</small></label>
+            </fieldset>
+            <details class="adv mb-3">
+              <summary>Altri dati dalla bolletta (facoltativi)</summary>
+              <div class="fields">
+                <label for="now">Quanto spendi oggi in un anno (€)<small>Per calcolare il risparmio</small>
+                  <input id="now" class="form-control" type="number" min="0" step="1" placeholder="es. 1100"></label>
+                <label for="f1">Consumo in F1 (%)<small>Giorni feriali 8–19. Senza: 33%</small>
+                  <input id="f1" class="form-control" type="number" min="0" max="100" step="1" placeholder="33"></label>
+                <label for="f2">Consumo in F2 (%)<small>Sere e sabato. Senza: 31%</small>
+                  <input id="f2" class="form-control" type="number" min="0" max="100" step="1" placeholder="31"></label>
+              </div>
+            </details>
+            <button type="submit" class="btn btn-primary btn-lg w-100">Confronta le offerte</button>
+          </div>
+        </form>
       </div>
-    </details>
-    <button type="submit">Confronta le offerte</button>
-  </form>
+    </div>
+  </div>
+</header>
 
+<main class="container results-wrap">
   <section id="out" hidden></section>
-
-  <footer>
-    <p><b>Da dove vengono i numeri.</b> Offerte e componenti regolate: open data del <a href="https://www.ilportaleofferte.it/portaleOfferte/it/open-data.page" rel="noopener">Portale Offerte di ARERA</a>, aggiornati ogni notte<span id="asof"></span>. Questo sito non è collegato ad ARERA né ad alcun fornitore. <span id="disclosure">Non riceve commissioni.</span></p>
-    <p><b>Cosa è stimato.</b> Cliente domestico residente, primi 12 mesi. Sconti con condizioni (es. domiciliazione) esclusi. Le offerte a prezzo variabile non sono ancora incluse. Prima di firmare, controlla sempre le condizioni sul sito del fornitore o sul Portale Offerte.</p>
-    <p><b>Per regione.</b> <a href="luce/lombardia/">Lombardia</a> · <a href="luce/lazio/">Lazio</a> · <a href="luce/campania/">Campania</a> · <a href="luce/veneto/">Veneto</a> · <a href="luce/piemonte/">Piemonte</a> · <a href="luce/sicilia/">Sicilia</a> · <a href="luce/emilia-romagna/">Emilia-Romagna</a> · <a href="luce/toscana/">Toscana</a> · <a href="luce/puglia/">Puglia</a> · <a href="sitemap.xml">tutte</a></p>
-    <p><b>Privacy.</b> Il calcolo avviene nel tuo browser: i dati che inserisci non lasciano il tuo dispositivo. Nessun cookie, nessuna statistica.</p>
-  </footer>
 </main>
+
+<section class="features-icons bg-light text-center">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+          <div class="features-icons-icon d-flex"><i class="bi-telephone-x m-auto text-primary"></i></div>
+          <h3>Nessuna chiamata</h3>
+          <p class="lead mb-0">Non chiediamo numero di telefono né email. Nessun venditore ti richiamerà.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+          <div class="features-icons-icon d-flex"><i class="bi-shield-lock m-auto text-primary"></i></div>
+          <h3>I tuoi dati restano a te</h3>
+          <p class="lead mb-0">Il calcolo avviene nel tuo browser. Nessun cookie, nessuna statistica.</p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="features-icons-item mx-auto mb-0 mb-lg-3">
+          <div class="features-icons-icon d-flex"><i class="bi-sort-numeric-down m-auto text-primary"></i></div>
+          <h3>Classifica onesta</h3>
+          <p class="lead mb-0">Ordinata solo per costo totale. Un eventuale link con commissione è sempre indicato e non cambia la posizione.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="showcase">
+  <div class="container-fluid p-0">
+    <div class="row g-0">
+      <div class="col-lg-6 order-lg-2 showcase-panel"><i class="bi-receipt"></i></div>
+      <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+        <h2>Il prezzo pubblicizzato è solo una parte</h2>
+        <p class="lead mb-0">Sopra il prezzo dell'energia si pagano la quota fissa del fornitore, il trasporto e il contatore, gli oneri di sistema, il dispacciamento, le accise e l'IVA. Per questo il costo reale per kWh è circa il doppio. Qui vedi il totale di un anno, voce per voce.</p>
+      </div>
+    </div>
+    <div class="row g-0">
+      <div class="col-lg-6 showcase-panel alt"><i class="bi-file-earmark-pdf"></i></div>
+      <div class="col-lg-6 my-auto showcase-text">
+        <h2>La bolletta la leggiamo noi, sul tuo telefono</h2>
+        <p class="lead mb-0">Scegli il PDF della bolletta: consumo annuo, potenza e regione si compilano da soli. Il file non lascia mai il tuo dispositivo.</p>
+      </div>
+    </div>
+    <div class="row g-0">
+      <div class="col-lg-6 order-lg-2 showcase-panel"><i class="bi-database-check"></i></div>
+      <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+        <h2>Dati ufficiali, aggiornati ogni giorno</h2>
+        <p class="lead mb-0">Le offerte e le componenti regolate vengono dagli open data del Portale Offerte di ARERA, scaricati due volte al giorno. Nessun fornitore paga per comparire.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer bg-light">
+  <div class="container small">
+    <p><b>Da dove vengono i numeri.</b> Offerte e componenti regolate: open data del <a href="https://www.ilportaleofferte.it/portaleOfferte/it/open-data.page" rel="noopener">Portale Offerte di ARERA</a>, aggiornati due volte al giorno<span id="asof"></span>. Questo sito non è collegato ad ARERA né ad alcun fornitore. <span id="disclosure">Non riceve commissioni.</span></p>
+    <p><b>Cosa è stimato.</b> Cliente domestico residente, primi 12 mesi. Sconti con condizioni (es. domiciliazione) esclusi. Le offerte a prezzo variabile, quando presenti, sono una stima con il PUN degli ultimi 12 mesi. Prima di firmare, controlla sempre le condizioni sul sito del fornitore o sul Portale Offerte.</p>
+    <p><b>Per regione.</b> <a href="luce/lombardia/">Lombardia</a> · <a href="luce/lazio/">Lazio</a> · <a href="luce/campania/">Campania</a> · <a href="luce/veneto/">Veneto</a> · <a href="luce/piemonte/">Piemonte</a> · <a href="luce/sicilia/">Sicilia</a> · <a href="luce/emilia-romagna/">Emilia-Romagna</a> · <a href="luce/toscana/">Toscana</a> · <a href="luce/puglia/">Puglia</a> · <a href="sitemap.xml">tutte</a></p>
+    <p class="mb-0"><b>Privacy.</b> Il calcolo avviene nel tuo browser: i dati che inserisci non lasciano il tuo dispositivo. Nessun cookie, nessuna statistica.</p>
+  </div>
+</footer>
 
 <script type="module" src="app.js"></script>
 

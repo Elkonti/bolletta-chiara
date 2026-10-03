@@ -1,0 +1,95 @@
+/* Bolletta Chiara on top of Start Bootstrap "Landing Page" (vendor/landing).
+   Brand colours, system fonts (nothing loaded from other sites), a gradient
+   masthead instead of the template's photo, and the results list. */
+:root {
+  --brand: #0f6b4f; --brand-dark: #0a4d39; --brand-soft: #e3f1ea;
+  --ink: #1d2420; --muted: #5d6862; --line: #dfe3dd; --surface: #ffffff;
+  --warn: #8a5a00; --warn-soft: #fbf1dc;
+  --bar-energy: #0f6b4f; --bar-fee: #5f9e86; --bar-net: #9aa7a0; --bar-tax: #c9a24a;
+  --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bs-body-color: var(--ink);
+}
+body { font-family: var(--bs-body-font-family); color: var(--ink); }
+h1, h2, h3, .h1, .h2, .h3 { font-family: var(--bs-body-font-family); text-wrap: balance; }
+a { color: var(--brand); }
+a:hover { color: var(--brand-dark); }
+
+/* Brand colour for the template's primary (Bootstrap blue by default). */
+.text-primary { color: var(--brand) !important; }
+.btn-primary {
+  --bs-btn-bg: var(--brand); --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand-dark); --bs-btn-hover-border-color: var(--brand-dark);
+  --bs-btn-active-bg: var(--brand-dark); --bs-btn-active-border-color: var(--brand-dark);
+  --bs-btn-focus-shadow-rgb: 15, 107, 79;
+}
+.form-control:focus, .form-select:focus, .form-check-input:focus { border-color: #5f9e86; box-shadow: 0 0 0 .25rem rgba(15, 107, 79, .25); }
+.form-check-input:checked { background-color: var(--brand); border-color: var(--brand); }
+
+/* Masthead: gradient, no stock photo; less height because the form lives in it. */
+header.masthead { background: linear-gradient(135deg, #0a4d39 0%, #0f6b4f 55%, #2f8f6b 100%); padding-top: 3rem; padding-bottom: 3.5rem; }
+header.masthead:before { display: none; }
+header.masthead h1 { font-weight: 700; letter-spacing: -.01em; }
+header.masthead .lead { color: rgba(255, 255, 255, .88); font-size: 1.1rem; max-width: 40rem; margin-inline: auto; }
+@media (min-width: 768px) { header.masthead { padding-top: 5rem; padding-bottom: 5rem; } header.masthead h1 { font-size: 2.8rem; } }
+.promise { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.promise span { font-size: .85rem; background: rgba(255, 255, 255, .14); color: #fff; border-radius: 999px; padding: .25rem .8rem; }
+
+/* The calculator card. */
+.calc { border-radius: 1rem; text-align: left; }
+.calc label { display: grid; gap: .3rem; font-weight: 600; font-size: .92rem; }
+.calc label small { font-weight: 400; color: var(--muted); }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; }
+.pdf { padding: .9rem; border: 2px dashed #b9d6c8; border-radius: .75rem; background: var(--brand-soft); }
+.pdfmsg { font-size: .9rem; margin: .5rem 0 0; }
+.kind { border: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
+.kind legend { font-weight: 600; font-size: .92rem; margin-bottom: .3rem; width: 100%; float: none; }
+.kind label { display: flex; align-items: center; gap: .45rem; font-weight: 400; font-size: 1rem; }
+details.adv summary { cursor: pointer; color: var(--muted); font-size: .92rem; margin-bottom: .6rem; }
+
+/* Results. */
+.results-wrap { max-width: 52rem; }
+#out:not([hidden]) { display: grid; gap: 1rem; padding-block: 2rem 3rem; }
+#out p { margin: 0; }
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; padding: 1.2rem; display: grid; gap: .9rem; box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+.summary h2 { font-size: 1.2rem; margin: 0; }
+.figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+.figs div { display: grid; gap: .1rem; }
+.figs b { font-size: clamp(1.15rem, 4.5vw, 1.6rem); font-variant-numeric: tabular-nums; color: var(--brand); }
+.figs span { font-size: .82rem; color: var(--muted); }
+.save { background: var(--brand-soft); border-radius: .6rem; padding: .7rem .9rem; }
+.note { background: var(--warn-soft); color: var(--ink); border-radius: .6rem; padding: .7rem .9rem; font-size: .92rem; }
+.note b { color: var(--warn); }
+ol.offers { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; counter-reset: rank; }
+ol.offers > li { background: var(--surface); border: 1px solid var(--line); border-radius: .75rem; counter-increment: rank; transition: box-shadow .15s; }
+ol.offers > li:hover { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .06); }
+ol.offers details > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 2rem 1fr auto; gap: .2rem .8rem; align-items: baseline; padding: .8rem 1rem; }
+ol.offers details > summary::-webkit-details-marker { display: none; }
+ol.offers details > summary::before { content: counter(rank); color: var(--muted); font-variant-numeric: tabular-nums; font-size: .9rem; }
+.name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.price { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; color: var(--brand); }
+.meta { grid-column: 2 / 4; color: var(--muted); font-size: .84rem; }
+.detail { padding: 0 1rem 1rem 3.8rem; display: grid; gap: .6rem; }
+.bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); }
+.bar i { display: block; height: 100%; }
+#out table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+#out td { padding: .25rem 0; border-bottom: 1px solid var(--line); }
+#out td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#out tr:last-child td { border-bottom: 0; font-weight: 700; }
+.sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .4rem; vertical-align: -1px; }
+.cond { font-size: .84rem; color: var(--muted); }
+.more { justify-self: center; background: transparent; color: var(--brand); border: 1px solid var(--line); border-radius: .5rem; padding: .6rem 1.2rem; font-weight: 600; }
+@media (max-width: 480px) { .detail { padding-left: 1rem; } }
+
+/* Template sections: icon panels instead of stock photos. */
+.features-icons { padding-top: 4rem; padding-bottom: 4rem; }
+.features-icons h3 { font-size: 1.25rem; margin-top: .5rem; }
+.features-icons .lead { font-size: 1.02rem; color: var(--muted); }
+.showcase-panel { min-height: 14rem; display: grid; place-items: center; background: linear-gradient(135deg, #e3f1ea, #cfe6da); color: var(--brand); }
+.showcase-panel.alt { background: linear-gradient(135deg, #0f6b4f, #2f8f6b); color: #fff; }
+.showcase-panel i { font-size: 5rem; }
+@media (min-width: 992px) { .showcase-panel { min-height: 22rem; } }
+.showcase .showcase-text h2 { font-size: 1.6rem; }
+.showcase .showcase-text .lead { font-size: 1.05rem; color: var(--muted); }
+@media (min-width: 768px) { .showcase .showcase-text { padding: 4rem; } }
+footer.footer { padding-top: 2.5rem; padding-bottom: 2.5rem; color: var(--muted); }
+footer.footer a { color: var(--brand); }
