@@ -102,7 +102,21 @@ function render() {
   if (more) more.onclick = () => { shown += 30; $("list").innerHTML = list(); if (shown >= rows.length) more.remove(); };
 }
 
-$("f").addEventListener("submit", async (e) => { e.preventDefault(); await ready; render(); });
+$("f").addEventListener("submit", async (e) => {
+  e.preventDefault(); await ready; render();
+  $("out").scrollIntoView?.({ behavior: "smooth", block: "start" });
+});
+
+// Results follow the form: changing the region or a number re-ranks at once,
+// without pressing the button (they used to update only on submit, so a new
+// region looked ignored). Typing waits a moment; invalid values are skipped.
+let pending;
+const refresh = () => {
+  clearTimeout(pending);
+  pending = setTimeout(async () => { await ready; if (data && $("f").checkValidity?.() !== false) render(); }, 250);
+};
+for (const id of ["region", "kwh", "kw", "now", "f1", "f2"]) $(id).addEventListener("change", refresh);
+for (const id of ["kwh", "now", "f1", "f2"]) $(id).addEventListener("input", refresh);
 
 // Bill PDF: read on the device (billread.js + self-hosted pdf.js), fill the
 // form, say what was found so the visitor can check it.

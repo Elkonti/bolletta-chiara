@@ -38,6 +38,14 @@ p = await page(data, "fixed");
 has(p.out.innerHTML, /offerte a prezzo fisso per/);
 has(p.out.innerHTML, /Stima\.|segue il PUN|NaN|undefined/, false);
 
+// Changing the region re-ranks without pressing the button.
+p = await page(data, "fixed");
+has(p.out.innerHTML, /in Lombardia/);
+p.region.value = "12";
+p.region.handlers.change();
+await new Promise((r) => setTimeout(r, 300));
+has(p.out.innerHTML, /in Lazio/);
+
 // Old-format data (no index, as before the data builder update): fixed only, no choice.
 const old = { ...data, index: undefined, offers: data.offers.filter((o) => !o.variable) };
 p = await page(old, "variable");
@@ -64,4 +72,4 @@ await p.pdf.handlers.change();
 assert.equal(String(p.kwh.value), "2700");
 has(p.pdfmsg.textContent, /Non sono riuscito a leggere/);
 
-console.log("ok   page: fixed/variable choice, estimate note, old data without index, bill PDF");
+console.log("ok   page: fixed/variable choice, estimate note, old data without index, bill PDF, region change");
