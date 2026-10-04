@@ -37,6 +37,11 @@ has(p.out.innerHTML, /NaN|undefined|−?€\s*-/, false);
 p = await page(data, "fixed");
 has(p.out.innerHTML, /offerte a prezzo fisso per/);
 has(p.out.innerHTML, /Stima\.|segue il PUN|NaN|undefined/, false);
+// The answer first: the masthead shows the same cheapest and typical cost as the results.
+const best = p.out.innerHTML.match(/<b>([^<]+)<\/b><span>la più conveniente/)[1];
+assert.equal(p["t-best"].textContent, best);
+has(p["teaser-label"].textContent, /Oggi in Lombardia, per 2\.?700 kWh l'anno/);
+assert.equal(p.nojs.hidden, true);
 
 // Changing the region re-ranks without pressing the button.
 p = await page(data, "fixed");
@@ -45,6 +50,7 @@ p.region.value = "12";
 p.region.handlers.change();
 await new Promise((r) => setTimeout(r, 300));
 has(p.out.innerHTML, /in Lazio/);
+has(p["teaser-label"].textContent, /Oggi in Lazio/);
 
 // Old-format data (no index, as before the data builder update): fixed only, no choice.
 const old = { ...data, index: undefined, offers: data.offers.filter((o) => !o.variable) };
@@ -72,4 +78,4 @@ await p.pdf.handlers.change();
 assert.equal(String(p.kwh.value), "2700");
 has(p.pdfmsg.textContent, /Non sono riuscito a leggere/);
 
-console.log("ok   page: fixed/variable choice, estimate note, old data without index, bill PDF, region change");
+console.log("ok   page: fixed/variable choice, estimate note, old data without index, bill PDF, region change, price first");

@@ -12,7 +12,10 @@ const per = (v) => v.toLocaleString("it-IT", { minimumFractionDigits: 3, maximum
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const link = (u) => !u ? "" : (/^https?:\/\//i.test(u) ? u : "https://" + u);
 
-$("region").innerHTML = REGIONS.map(([c, n]) => `<option value="${c}">${n}</option>`).join("");
+// The page already lists the regions (so the choice works even before this
+// script runs); fill them only if missing.
+if (!$("region").options?.length) $("region").innerHTML = REGIONS.map(([c, n]) => `<option value="${c}">${n}</option>`).join("");
+$("nojs").hidden = true; // the script runs: no need for the "open the site's address" hint
 try { $("region").value = localStorage.getItem("region") || "03"; } catch { $("region").value = "03"; }
 
 // A region page links here with ?regione=NN.
@@ -66,6 +69,21 @@ function row(r, kwh) {
     ${offerButton(o)}</div></details></li>`;
 }
 
+// The answer first: the masthead shows the cheapest and the typical yearly
+// cost for the current inputs (the typical household until the visitor
+// changes them), above the form.
+function teaser(rows, kwh, region, kindWord) {
+  const name = REGIONS.find(([c]) => c === region)[1];
+  if (!rows.length) {
+    $("teaser-label").textContent = `Nessuna offerta a prezzo ${kindWord} per ${kwh.toLocaleString("it-IT")} kWh in ${name}.`;
+    $("t-best").textContent = $("t-median").textContent = "–";
+    return;
+  }
+  $("teaser-label").textContent = `Oggi in ${name}, per ${kwh.toLocaleString("it-IT")} kWh l'anno, offerte a prezzo ${kindWord}:`;
+  $("t-best").textContent = eur(rows[0].total);
+  $("t-median").textContent = eur(rows[Math.floor((rows.length - 1) / 2)].total);
+}
+
 function render() {
   const kwh = +$("kwh").value, kw = +$("kw").value, region = $("region").value;
   const f1 = $("f1").value === "" ? null : +$("f1").value / 100, f2 = $("f2").value === "" ? null : +$("f2").value / 100;
@@ -78,6 +96,7 @@ function render() {
   const kindWord = variable ? "variabile" : "fisso";
   const rows = rank(data, { kwh, kw, region, split, variable });
   const out = $("out");
+  teaser(rows, kwh, region, kindWord);
   if (!rows.length) { out.innerHTML = `<p class="note">Nessuna offerta a prezzo ${kindWord} trovata per questi valori.</p>`; out.hidden = false; return; }
   const estimate = variable
     ? `<p class="note"><b>Stima.</b> Il prezzo di queste offerte segue il PUN, che cambia ogni mese. Il calcolo usa la media del PUN di ${esc(monthName(data.index.from))}–${esc(monthName(data.index.to))} (${per(data.index.pun)}, più le perdite di rete) e lo spread di ogni offerta. Se il PUN sale o scende, il costo cambia. Il Portale Offerte usa invece prezzi futuri che non sono pubblici, quindi i suoi totali possono essere diversi.</p>`
@@ -146,7 +165,7 @@ $("pdf").addEventListener("change", async () => {
   if (found.length) { await ready; render(); }
 });
 $("kind").addEventListener("change", () => { if (data) render(); });
-ready.then(render).catch(() => { $("out").innerHTML = `<p class="note"><b>Dati non disponibili.</b> Riprova tra qualche minuto.</p>`; $("out").hidden = false; });
+ready.then(render).catch(() => { $("teaser-label").textContent = "Dati non disponibili in questo momento: riprova tra qualche minuto."; $("out").innerHTML = `<p class="note"><b>Dati non disponibili.</b> Riprova tra qualche minuto.</p>`; $("out").hidden = false; });
 
 // Installable app and offline use (browsers allow it only over HTTPS).
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});

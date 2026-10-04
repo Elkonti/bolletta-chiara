@@ -34,6 +34,17 @@ header.masthead .lead { color: rgba(255, 255, 255, .88); font-size: 1.1rem; max-
 .promise { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
 .promise span { font-size: .85rem; background: rgba(255, 255, 255, .14); color: #fff; border-radius: 999px; padding: .25rem .8rem; }
 
+/* The answer first: today's prices in the masthead. */
+.teaser { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .25); border-radius: 1rem; padding: 1rem 1rem 1.2rem; max-width: 34rem; margin-inline: auto; }
+.teaser-label { color: rgba(255, 255, 255, .9); margin: 0 0 .6rem; font-size: 1rem; }
+.teaser-figs { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.teaser-figs div { display: grid; gap: .1rem; }
+.teaser-figs b { font-size: clamp(1.8rem, 9vw, 2.6rem); line-height: 1.1; font-variant-numeric: tabular-nums; color: #fff; }
+.teaser-figs div:first-child b { color: #b8f5d8; }
+.teaser-figs span { font-size: .85rem; color: rgba(255, 255, 255, .8); }
+.teaser-nojs { font-size: .85rem; color: #fff3c4; margin: .8rem 0 0; }
+.teaser .btn-light { color: var(--brand-dark); font-weight: 600; }
+
 /* The calculator card. */
 .calc { border-radius: 1rem; text-align: left; }
 .calc label { display: grid; gap: .3rem; font-weight: 600; font-size: .92rem; }
