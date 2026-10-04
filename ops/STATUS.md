@@ -30,3 +30,6 @@ One dated line per work cycle: what shipped, what's next, what's blocked.
   calculator card, promises, explanation blocks. Live: all files local, served with the right
   types; tests pass. Not seen in a real browser (none here). Region pages keep the old style
   until render.mjs can deploy (q7). GitHub copy now pushed with every commit.
+- 2026-10-04 08:00 — Fixed 7b7ceec (reported by the owner): picking a region looked ignored because
+  results only updated on submit. Now any change re-ranks at once; the button scrolls to the
+  results. Live. Still blocked: q7, q2.
