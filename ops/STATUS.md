@@ -33,3 +33,9 @@ One dated line per work cycle: what shipped, what's next, what's blocked.
 - 2026-10-04 08:00 — Fixed 7b7ceec (reported by the owner): picking a region looked ignored because
   results only updated on submit. Now any change re-ranks at once; the button scrolls to the
   results. Live. Still blocked: q7, q2.
+- 2026-10-04 12:40 — Shipped 68c8338: price first (masthead shows today's cheapest/typical
+  yearly cost, follows the form); region list written in the page; note when scripts can't run.
+  Owner's "can't choose region": opening index.html from disk blocks app.js (file:// CORS) and
+  left the list empty; live site worked. Verified with headless Chrome (now in scratchpad,
+  libs unpacked locally, no root). Browsers may cache old pages: Caddyfile now sends no-cache
+  for code, but installing it needs root (added to HQ q7).

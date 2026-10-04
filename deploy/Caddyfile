@@ -13,6 +13,10 @@
 	}
 	@data path /data/*
 	header @data Cache-Control "public, max-age=3600"
+	# Pages, scripts and styles: browsers check for a new version every time
+	# (a cheap 304 when unchanged), so a deploy is seen at once.
+	@code path / *.html *.js *.css *.webmanifest
+	header @code Cache-Control "no-cache"
 	log {
 		# Errors only: no access log, so no visitor IPs are stored.
 		output discard
